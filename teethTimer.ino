@@ -9,76 +9,54 @@
 #define BUTTON_PIN D0
 #define RED_LED D1
 #define GREEN_LED D2
-#define BRUSHIN_TIME 120
+#define BRUSHIN_TIME 5
 
+//https://docs.particle.io/support/troubleshooting/mode-switching/photon/#semi-automatic-mode
+SYSTEM_MODE(SEMI_AUTOMATIC);
 
-
-//////////////////////////////////
-// MicroOLED Object Declaration //
-//////////////////////////////////
-// Declare a MicroOLED object. The parameters include:
-// 1 - Mode: Should be either MODE_SPI or MODE_I2C
-// 2 - Reset pin: Any digital pin
-// 3 - D/C pin: Any digital pin (SPI mode only)
-// 4 - CS pin: Any digital pin (SPI mode only, 10 recommended)
 MicroOLED oled(MODE_SPI, PIN_RESET, PIN_DC, PIN_CS);
-//MicroOLED uOLED(MODE_I2C, PIN_RESET); // Example I2C declaration
 
-// I2C is great, but will result in a much slower update rate. The
-// slower framerate may be a worthwhile tradeoff, if you need more
-// pins, though.
-ClickButton button1(BUTTON_PIN, LOW, CLICKBTN_PULLUP);
-
-////////////////////
-// Cube Variables //
-////////////////////
-#define SHAPE_SIZE 600
-#define ROTATION_SPEED 0 // ms delay between cube draws
+//ClickButton button1(BUTTON_PIN, LOW, CLICKBTN_PULLUP);
 
 int SCREEN_WIDTH = oled.getLCDWidth();
 int SCREEN_HEIGHT = oled.getLCDHeight();
-
-float d = 3;
-float px[] = { -d,  d,  d, -d, -d,  d,  d, -d };
-float py[] = { -d, -d,  d,  d, -d, -d,  d,  d };
-float pz[] = { -d, -d, -d, -d,  d,  d,  d,  d };
-
-float p2x[] = {0,0,0,0,0,0,0,0};
-float p2y[] = {0,0,0,0,0,0,0,0};
-
-float r[] = {0,0,0};
 
 bool brushing = false;
 
 void setup()
 {
+   attachInterrupt(BUTTON_PIN, click, RISING);
+
   oled.begin();
   oled.clear(ALL);
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
-  button1.debounceTime   = 20;   // Debounce timer in ms
-  button1.multiclickTime = 250;  // Time limit for multi clicks
-  button1.longClickTime  = 1000; // time until "held-down clicks" register
+//  button1.debounceTime   = 20;   // Debounce timer in ms
+//  button1.multiclickTime = 250;  // Time limit for multi clicks
+//  button1.longClickTime  = 1000; // time until "held-down clicks" register
 
   pinMode(RED_LED, OUTPUT);
   pinMode(GREEN_LED, OUTPUT);
+}
+
+
+void click() {
+  if (Particle.connected() == false) {
+    Particle.connect();
+  }
+  if (!brushing )
+  {
+      startBrushing(BRUSHIN_TIME);
+  }
 
 }
+
+
+
 void loop()
 {
 
-  button1.Update();
-  int click = button1.clicks;
-  if(click != 0)
-  {
-    if (!brushing )
-    {
-        startBrushing(BRUSHIN_TIME);
-    }
-  }
-
-  delay(0);
 }
 
 
@@ -123,15 +101,12 @@ void displayTime(int time){
 
 
 void showSmiley () {
-  //oled.clear(PAGE);
+  oled.clear(PAGE);
 
-  //oled.drawBitmap(tiny_teeth);
+  oled.drawBitmap(tiny_teeth);
 
-  //oled.display();
-  printTitle("Bye",1);
-  delay(500);
-  printTitle("Louie",1);
-  delay (500);
+  oled.display();
+  delay(2000);
   oled.clear(PAGE);
 }
 
