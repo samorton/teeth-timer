@@ -1,7 +1,7 @@
 #include "SparkFunMicroOLED.h"  // Include Micro OLED library
 #include "math.h"
 #include "ClickButton.h"
-
+#include "images.h"
 
 #define PIN_RESET D7  // Connect RST to pin 7 (req. for SPI and I2C)
 #define PIN_DC    D6  // Connect DC to pin 6 (required for SPI)
@@ -9,6 +9,8 @@
 #define BUTTON_PIN D0
 #define RED_LED D1
 #define GREEN_LED D2
+
+
 
 //////////////////////////////////
 // MicroOLED Object Declaration //
@@ -66,18 +68,16 @@ void loop()
 {
 
   button1.Update();
-
-  if(button1.clicks != 0)
+  int click = button1.clicks;
+  if(click != 0)
   {
-    //decodeFunction(button1.clicks);
     if (!brushing )
     {
-        startBrushing(120);
+        startBrushing(3);
     }
   }
-  //drawCube();
-	//delay(ROTATION_SPEED);
-  delay(1);
+
+  delay(0);
 }
 
 
@@ -86,13 +86,13 @@ void startBrushing( int time){
   brushing = true;
   digitalWrite(RED_LED, HIGH);
   digitalWrite(GREEN_LED, LOW);
-  while (time--> 0)
+  while (time > 0)
   {
     displayTime(time);
       delay(1000);
+      time--;
   }
-
-  //displayStopwatch();
+  showSmiley();
 
   brushing = false;
   digitalWrite(RED_LED, LOW);
@@ -100,41 +100,7 @@ void startBrushing( int time){
  delay(2000);
  digitalWrite(GREEN_LED, LOW);
 }
-void decodeFunction(int function) {
-  if(function == 1)
-  {
-    Particle.publish("button-press","SINGLE click");
-    Serial.println("SINGLE click");
-  }
 
-  if(function == 2){
-    Particle.publish("button-press","DOUBLE click");
-    Serial.println("DOUBLE click");
-  }
-
-if(function == 3)
-{
-  Particle.publish("button-press","TRIPLE click");
-  Serial.println("TRIPLE click");
-}
-
-  if(function == -1) {
-    Particle.publish("button-press","SINGLE LONG click");
-    Serial.println("SINGLE LONG click");
-  }
-
-  if(function == -2) {
-    Particle.publish("button-press","DOUBLE LONG click");
-    Serial.println("DOUBLE LONG click");
-  }
-
-  if(function == -3)
-  {
-    Particle.publish("button-press","TRIPLE LONG click");
-    Serial.println("TRIPLE LONG click");
-  }
-
-}
 
 void displayTime(int time){
   oled.setFontType(3);
@@ -153,72 +119,11 @@ void displayTime(int time){
   oled.display();
 }
 
-void displayStopwatch() {
-  // Demonstrate font 3. 12x48. Stopwatch demo.
-  oled.setFontType(3);  // Use the biggest font
-  int ms = 0;
-  int s = 0;
-  while (s <= 50)
-  {
-    oled.clear(PAGE);     // Clear the display
-    oled.setCursor(0, 0); // Set cursor to top-left
-    if (s < 10)
-      oled.print("00");   // Print "00" if s is 1 digit
-    else if (s < 100)
-      oled.print("0");    // Print "0" if s is 2 digits
-    oled.print(s);        // Print s's value
-    oled.print(":");      // Print ":"
-    oled.print(ms);       // Print ms value
-    oled.display();       // Draw on the screen
-    ms++;         // Increment ms
-    if (ms >= 10) // If ms is >= 10
-    {
-      ms = 0;     // Set ms back to 0
-      s++;        // and increment s
-    }
-    delay(1);
-  }
-}
 
 
+void showSmiley () {
+  oled.clear(PAGE);
+  oled.drawBitmap(tiny_teeth);
 
-
-void drawCube()
-{
-  r[0]=r[0]+M_PI/180.0; // Add a degree
-	r[1]=r[1]+M_PI/180.0; // Add a degree
-	r[2]=r[2]+M_PI/180.0; // Add a degree
-	if (r[0] >= 360.0*M_PI/180.0) r[0] = 0;
-	if (r[1] >= 360.0*M_PI/180.0) r[1] = 0;
-	if (r[2] >= 360.0*M_PI/180.0) r[2] = 0;
-
-	for (int i=0;i<8;i++)
-	{
-		float px2 = px[i];
-		float py2 = cos(r[0])*py[i] - sin(r[0])*pz[i];
-		float pz2 = sin(r[0])*py[i] + cos(r[0])*pz[i];
-
-		float px3 = cos(r[1])*px2 + sin(r[1])*pz2;
-		float py3 = py2;
-		float pz3 = -sin(r[1])*px2 + cos(r[1])*pz2;
-
-		float ax = cos(r[2])*px3 - sin(r[2])*py3;
-		float ay = sin(r[2])*px3 + cos(r[2])*py3;
-		float az = pz3-150;
-
-		p2x[i] = SCREEN_WIDTH/2+ax*SHAPE_SIZE/az;
-		p2y[i] = SCREEN_HEIGHT/2+ay*SHAPE_SIZE/az;
-	}
-
-	oled.clear(PAGE);
-	for (int i=0;i<3;i++)
-	{
-		oled.line(p2x[i],p2y[i],p2x[i+1],p2y[i+1]);
-		oled.line(p2x[i+4],p2y[i+4],p2x[i+5],p2y[i+5]);
-		oled.line(p2x[i],p2y[i],p2x[i+4],p2y[i+4]);
-	}
-	oled.line(p2x[3],p2y[3],p2x[0],p2y[0]);
-	oled.line(p2x[7],p2y[7],p2x[4],p2y[4]);
-	oled.line(p2x[3],p2y[3],p2x[7],p2y[7]);
-	oled.display();
+  oled.display();
 }
