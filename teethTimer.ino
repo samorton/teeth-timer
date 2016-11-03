@@ -9,6 +9,7 @@
 #define BUTTON_PIN D0
 #define RED_LED D1
 #define GREEN_LED D2
+#define BRUSHIN_TIME 120
 
 
 
@@ -73,7 +74,7 @@ void loop()
   {
     if (!brushing )
     {
-        startBrushing(3);
+        startBrushing(BRUSHIN_TIME);
     }
   }
 
@@ -122,8 +123,32 @@ void displayTime(int time){
 
 
 void showSmiley () {
-  oled.clear(PAGE);
-  oled.drawBitmap(tiny_teeth);
+  //oled.clear(PAGE);
 
+  //oled.drawBitmap(tiny_teeth);
+
+  //oled.display();
+  printTitle("Bye",1);
+  delay(500);
+  printTitle("Louie",1);
+  delay (500);
+  oled.clear(PAGE);
+}
+
+
+void printTitle(String title, int font)
+{
+  int middleX = oled.getLCDWidth() / 2;
+  int middleY = oled.getLCDHeight() / 2;
+
+  oled.clear(PAGE);
+  oled.setFontType(font);
+  // Try to set the cursor in the middle of the screen
+  oled.setCursor(middleX - (oled.getFontWidth() * (title.length()/2)),
+                 middleY - (oled.getFontWidth() / 2));
+  // Print the title:
+  oled.print(title);
   oled.display();
+  delay(1500);
+  oled.clear(PAGE);
 }
